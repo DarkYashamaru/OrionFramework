@@ -25,6 +25,16 @@ public static class XMLManager
 		return t;
 	}
 
+	public static T LoadXmlAtCustomPath<T> (string path) where T : class
+	{
+		XmlSerializer serializer = new XmlSerializer(typeof(T));
+		FileStream stream = new FileStream(path, FileMode.Open);
+		StreamReader sr = new StreamReader(stream, System.Text.Encoding.UTF8);
+		T t = serializer.Deserialize(sr) as T;
+		stream.Close();
+		return t;
+	}
+
 	public static void SaveXML<T>(string fileName, object data) where T : class
 	{
 		if (!fileName.Contains (".xml"))
@@ -32,6 +42,16 @@ public static class XMLManager
 		Directory.CreateDirectory(DirectoryPath).Create();
 		XmlSerializer serializer = new XmlSerializer(typeof(T));
 		FileStream stream = new FileStream(DirectoryPath+fileName, FileMode.Create);
+		StreamWriter streamWriter = new StreamWriter(stream, System.Text.Encoding.UTF8);
+		serializer.Serialize(streamWriter,data);
+		stream.Close();
+	}
+
+	public static void SaveXMLAtCustomPath<T>(string path, string fileName, object data) where T : class
+	{
+		Directory.CreateDirectory(path).Create();
+		XmlSerializer serializer = new XmlSerializer(typeof(T));
+		FileStream stream = new FileStream(path+fileName, FileMode.Create);
 		StreamWriter streamWriter = new StreamWriter(stream, System.Text.Encoding.UTF8);
 		serializer.Serialize(streamWriter,data);
 		stream.Close();

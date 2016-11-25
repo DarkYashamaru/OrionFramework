@@ -25,8 +25,23 @@ public static class CommonEditorMethods {
 		}
 	}
 
-	[MenuItem("GameObject/Custom/Canvas", false, 10)]
-	static void CreateCustomCanvas(MenuCommand menuCommand) {
+	[MenuItem("GameObject/Custom/Canvas/HD Canvas", false, 10)]
+	static void CreateCustomHDCanvas(MenuCommand menuCommand) {
+		CreateCanvas (1280, 720, menuCommand);
+	}
+
+	[MenuItem("GameObject/Custom/Canvas/Full HD Canvas", false, 10)]
+	static void CreateCustomFullHDCanvas(MenuCommand menuCommand) {
+		CreateCanvas (1920, 1080, menuCommand);
+	}
+
+	[MenuItem("GameObject/Custom/Canvas/4K Canvas", false, 10)]
+	static void CreateCustom4KCanvas(MenuCommand menuCommand) {
+		CreateCanvas (3840, 2160, menuCommand);
+	}
+
+	static void CreateCanvas (int witdh, int height, MenuCommand menuCommand)
+	{
 		// Create a custom game object
 		GameObject go = new GameObject("Canvas Container");
 		GameObject content = new GameObject("Content");
@@ -51,7 +66,7 @@ public static class CommonEditorMethods {
 		cv.renderMode = RenderMode.ScreenSpaceCamera;
 		cv.worldCamera = c;
 		cs.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-		cs.referenceResolution = new Vector2(3840,2160);
+		cs.referenceResolution = new Vector2(witdh,height);
 		cv.planeDistance = 3;
 		cv.gameObject.layer = LayerMask.NameToLayer("UI");
 		cv.pixelPerfect = true;

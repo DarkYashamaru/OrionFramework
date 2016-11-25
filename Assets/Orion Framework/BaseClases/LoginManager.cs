@@ -5,13 +5,13 @@ using System.Xml.Serialization;
 using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters.Binary;
 
-
 namespace OrionFramework
 {
 	public static class LoginManager {
 		static SerializationType Serialization;
-		public static string path = "/UserDatabase";
+		public static string path = "UserDatabase";
 		static UserDatabase database;
+		public static User CurrentUser;
 		public static UserDatabase Database
 		{
 			get
@@ -38,11 +38,13 @@ namespace OrionFramework
 		{
 			if (database == null) 
 			{
+				UnityEngine.Debug.Log ("File exist " + SerializationManager.FileExist(FileName,Serialization) + " FileName " + FileName);
 				if (SerializationManager.FileExist (FileName,Serialization)) {
 					database = SerializationManager.Load<UserDatabase> (FileName, Serialization);
 				}
 				if (database == null) 
 				{
+					UnityEngine.Debug.Log ("Creating new data");
 					database = new UserDatabase ();
 					SerializationManager.Save<UserDatabase> (FileName, database, Serialization);
 				}
@@ -59,6 +61,16 @@ namespace OrionFramework
 			Serialization = serialization;
 			LoadOrCreate ();
 		}
+
+		public static User GetUserByName (string name, string lastName)
+		{
+			for (int i = 0; i < database.Users.Count; i++) 
+			{
+				if (database.Users [i].userName.Equals (name) && database.Users [i].lastName.Equals (lastName))
+					return database.Users [i];
+			}
+			return null;
+		}
 	}
 
 	[Serializable]
@@ -72,7 +84,38 @@ namespace OrionFramework
 	{
 		public string userName = string.Empty;
 		public string id = string.Empty;
+		public string lastName = string.Empty;
 		public List<UserData> data = new List<UserData>();
+		public List<ArrayUserData> arrayData = new List<ArrayUserData>();
+
+		public User () {}
+
+		public User (UserData[] data) {
+			this.data.Clear ();
+			this.data.AddRange (data);
+		}
+
+		public UserData GetLastValueInArray (int secondIndex)
+		{
+			return arrayData.LastObject ().data[secondIndex];
+		}
+
+		public override string ToString ()
+		{
+			string message = string.Empty;
+			message += "Name : " + userName+"\n";
+			message += "id : " + id+"\n";
+			message += "lastName : " + lastName+"\n";
+			for (int i = 0; i < data.Count; i++) 
+			{
+				message+=data [i] + "\n";
+			}
+			for (int i = 0; i < arrayData.Count; i++) 
+			{
+				message+=arrayData [i] + "\n";
+			}
+			return message;
+		}
 	}
 
 	[Serializable]
@@ -80,6 +123,28 @@ namespace OrionFramework
 	{
 		public string name = string.Empty;
 		public string value;
+
+		public override string ToString ()
+		{
+			return string.Format ("[UserData] name: {0} value : {1}", name, value);
+		}
+	}
+
+	[Serializable]
+	public class ArrayUserData
+	{
+		public List<UserData> data = new List<UserData>();
+
+		public override string ToString ()
+		{
+			string message = string.Empty;
+			for (int i = 0; i < data.Count; i++) 
+			{
+				message += data [i].ToString ();
+				message += "\n";
+			}
+			return message;
+		}
 	}
 
 	public static class SerializationManager
@@ -157,7 +222,8 @@ namespace OrionFramework
 
 		public static bool FileExist (string path, SerializationType serialization)
 		{
-			return File.Exists(DirectoryPath+ path + GetExtention (serialization));
+			UnityEngine.Debug.Log (DirectoryPath + path);
+			return File.Exists(DirectoryPath+ path);
 		}
 
 		public static void CreateDirectory (string path)
@@ -170,8 +236,8 @@ namespace OrionFramework
 
 	public class Serializer
 	{
-		XmlSerializer xmlSerializer;
-		BinaryFormatter binarySerializer;
+		readonly XmlSerializer xmlSerializer;
+		readonly BinaryFormatter binarySerializer;
 		SerializationType CurrentSerialization;
 
 		public Serializer (SerializationType serialization, Type type)
